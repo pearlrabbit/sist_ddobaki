@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Insert title here</title>
+        <!-- css 초기화 -->
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css"
+        />
+
+        <!-- jquery -->
+        <script
+            type="text/javascript"
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+        ></script>
+
+        <!-- selectBox -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery.sumoselect/3.4.6/jquery.sumoselect.min.js"
+            integrity="sha512-QrFuYvQdMYt9Ux8Npgtqy1fnaN7qsNA68M0iFnyXwdrARBjLxrJrlbkdqrsmx7KThIagBgEdEDdWtEHm7cC2ag=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/jquery.sumoselect/3.4.6/sumoselect.min.css"
+            integrity="sha512-vU7JgiHMfDcQR9wyT/Ye0EAAPJDHchJrouBpS9gfnq3vs4UGGE++HNL3laUYQCoxGLboeFD+EwbZafw7tbsLvg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+    </head>
+    <body>
+        <!-- 전체 컨테이너 -->
+        <div id="placeContainer">
+            <!-- header(홈페이지 로고, 지역선택박스, 장소선택박스) -->
+            <header style="display: flex; height: 100px">
+                <!-- 홈페이지 로고 -->
+                <img alt="logo" src="logo.jpg" />
+
+                <!-- 지역선택박스, 장소선택박스 컨테이너 -->
+                <div
+                    id="selectContainer"
+                    style="display: flex; margin: 50px 0 50px 0"
+                >
+                    <!-- 지역 선택 박스 -->
+                    <select id="region_box" style="height: min-content">
+                        <option selected>지역</option>
+                        <option value="1">서울</option>
+                        <option value="2">경기</option>
+                        <option value="3">인천</option>
+                    </select>
+
+                    <!-- 장소 선택 박스 -->
+                    <ul id="type_box" style="display: flex; list-style: none">
+                        <li id="home" value="1" style="margin-right: 10px">
+                            숙소
+                        </li>
+                        <li
+                            id="restaurant"
+                            value="2"
+                            style="margin-right: 10px"
+                        >
+                            식당
+                        </li>
+                        <li id="cafe" value="3" style="margin-right: 10px">
+                            카페
+                        </li>
+                        <li id="famous" value="4" style="margin-right: 10px">
+                            관광명소
+                        </li>
+                    </ul>
+                </div>
+            </header>
+
+            <!-- place 카테고리 본문 -->
+            <main style="display: flex">
+                <!-- 검색박스, 장소리스트 컨테이너-->
+                <div
+                    id="listContainer"
+                    style="
+                        background-color: blueviolet;
+                        width: 300px;
+                        height: 100vh;
+                    "
+                >
+                    <!-- 검색박스 -->
+                    <div id="searchBox" style="padding: 10px">
+                        <!-- 장소 이름, 장소 필터 ,정렬 확인버튼 -->
+                        <form id="func" method="post" action="/savePlaces">
+                            <!-- 필터  -->
+                            <select id="placeOption" multiple="multiple">
+                                <!-- value가 place_park면 place_park = 1 이런 식으로 값 전달 -->
+                                <option value="1">주차</option>
+
+                                <option value="1">조식</option>
+
+                                <option value="1">스파</option>
+
+                                <!-- SMALL :1, MEDIUM :2, LARGE:3  -->
+                                <option value="1">소형견</option>
+
+                                <option value="2">중형견</option>
+
+                                <option value="3">대형견</option>
+                            </select>
+
+                            <!-- 정렬 버튼-->
+                            <select id="array">
+                                <option selected value="plan_num desc">
+                                    최신순
+                                </option>
+                                <option value="hits desc">조회순</option>
+                            </select>
+
+                            <!-- 장소 이름 -->
+                            <input
+                                id="keyword"
+                                type="text"
+                                name="place_name"
+                            /><br />
+
+                            <!--  확인 버튼  -->
+                            <input type="submit" value="검색" />
+                        </form>
+                    </div>
+
+                    <!-- 장소리스트 컨테이너 -->
+                    <div
+                        style="
+                            width: fit-content;
+                            height: 620px;
+                            background-color: blanchedalmond;
+                            margin: 0 auto;
+                        "
+                    >
+                        <!-- 장소 리스트 -->
+                        <table
+                            id="placeList"
+                            th:each="p : ${list}"
+                            style="background-color: white; width: 250px"
+                        >
+                            <!-- 장소 썸네일 -->
+
+                            <td id="place_thumbnail">
+                                <img
+                                    alt="place_thumbnail"
+                                    th:src="@{'/webapp/place_thumbnail/'+${p.place_thumbnail}}"
+                                />
+                            </td>
+                            <!-- 장소 이름 -->
+                            <td id="place_name" th:text="${p.place_name}">
+                                장소이름
+                            </td>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 지도 컨테이너 -->
+                <div
+                    id="mapContainer"
+                    style="
+                        background-color: aqua;
+                        display: flex;
+                        width: 80vw;
+                        justify-content: center;
+                        align-items: center;
+                    "
+                >
+                    <!-- 지도 api 공간 -->
+                    <div
+                        id="mapAPI"
+                        style="
+                            width: 1000px;
+                            height: 700px;
+                            background-color: white;
+                        "
+                    ></div>
+                </div>
+            </main>
+        </div>
+        <!--전체 컨테이너 끝 -->
+
+        <!-- jquery 작성 칸 -->
+        <script type="text/javascript">
+            // placeOption placeholder 지정
+            $(function () {
+                $('#placeOption').SumoSelect({ placeholder: 'option' });
+            });
+        </script>
+    </body>
+</html>
