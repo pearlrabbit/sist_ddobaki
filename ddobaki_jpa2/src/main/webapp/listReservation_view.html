@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h2>장소에 따른 룸 목록</h2>
+	<hr>
+	<table border="1" width="80%">
+		<thead>
+			<tr>
+				<th>장소이름</th>
+				<th>강아지 무게</th>
+				<th>룸번호</th>
+				<th>주차</th>
+				<th>스파</th>
+				<th>스파가격</th>
+				<th>조식</th>
+				<th>조식가격</th>
+				<th>주차가격</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each = "r:${list}">
+				<td th:text="${.id.name}"></td>
+				<td th:text="${.id.bookname}"></td>
+				<td th:text="${.orderdate}"></td>
+				<td th:text="${o.saleprice}"></td>
+				<td th:text="${o.price}"></td>
+			</tr>
+		</tbody>
+	</table>
+</body>
+</html>
