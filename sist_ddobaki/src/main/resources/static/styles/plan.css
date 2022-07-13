@@ -1,10 +1,14 @@
 @charset "UTF-8";
 
+/* main */
+.container{
+	border-radius: 10px;
+}
+
 #map {
 	height:70vh;
 	margin:3px;
 	border:3px;
-	
 }
 
 .grpNum {
@@ -21,24 +25,20 @@
 }
  #inputAppend {
 	width:100%;
-	
 	position: relative;
 } 
 .input-group div input{
 	justify-content: center;
-	width: 65%;	
+	width: 75%;	
 } 
 .input-group div{
-	/* background-color: red; */
 	padding: 5px;
 }
-.dropdown-menu{
+.dropdown{
 	height: 30vh;
 	overflow: auto;
 }
-.flowNum{
-	width: 20vw;
-}
+
 .btnPlaceListAll{
 	padding-left: 5px;
 	padding-right: 5px;
@@ -48,7 +48,8 @@
     display: flex;
 }
 #btnDibs, #btnPlace, #btnRsv{
-	width:100%
+	width:100%;
 }
+
 
 	
