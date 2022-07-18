@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import com.example.demo.vo.Dibs;
 import com.example.demo.vo.Place;
 import com.example.demo.vo.Plan;
 import com.example.demo.vo.Reservation;
+import com.example.demo.vo.UserInfo;
 
 import lombok.Setter;
 
@@ -60,37 +62,39 @@ public class PlanController {
 		return planS.findAll();
 	}
 	
-	@RequestMapping("/findByUserNum")
+	@GetMapping("/findByUserNum")
 	//@GetMapping("/findByUserNum/{user_num}")
 	@ResponseBody
-	public List<Plan> findByUserNum(@RequestParam("user_num") int user_num){
+	public List<Plan> findByUserNum(@RequestParam int user_num){
 		return planS.findByUserNum(user_num);
 	}
-	@GetMapping("/findByGroupNum/{plan_group_num}")
+	@GetMapping("/findByGroupNum")
 	@ResponseBody
-	public List<Plan> findByGroupNum(@PathVariable int plan_group_num){
+	public List<Plan> findByGroupNum(@RequestParam int plan_group_num){
 		return planS.findByGroupNum(plan_group_num);
 	}
-	@GetMapping("/findByPlanDate/{plan_date}")
+	@GetMapping("/findByPlanDate")
 	@ResponseBody
-	public List<Plan> findByPlanDate(@DateTimeFormat(pattern = "yyyy-MM-dd") @PathVariable Date plan_date){
+	public List<Plan> findByPlanDate(@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam Date plan_date){
 		return planS.findByPlanDate(plan_date);
 	}
-	@GetMapping("/findByAll/{user_num}/{plan_group_num}/{plan_date}")
+	@GetMapping("/findByAll")
 	@ResponseBody
-	public List<Plan> findByUserNumAndGroupNumAndPlanDate(@PathVariable int user_num, @PathVariable int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") @PathVariable Date plan_date){
+	public List<Plan> findByUserNumAndGroupNumAndPlanDate(@RequestParam int user_num, 
+			@RequestParam int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") 
+			@RequestParam Date plan_date){
 		return planS.findByUserNumAndGroupNumAndPlanDate(user_num, plan_group_num, plan_date);
 	}
 	
-	@GetMapping("/findByDidsUserNum/{user_num}")
+	@GetMapping("/findByDidsUserNum")
 	@ResponseBody
-	public List<Dibs> findByDibsUserNum(@PathVariable int user_num){
+	public List<Dibs> findByDibsUserNum(@RequestParam int user_num){
 		return dibsS.findByUserNum(user_num);
 	}
 	
-	@GetMapping("/findByReservationUserNum/{user_num}")
+	@GetMapping("/findByReservationUserNum")
 	@ResponseBody
-	public List<Reservation> findByReservationUserNum(@PathVariable int user_num){
+	public List<Reservation> findByReservationUserNum(@RequestParam int user_num){
 		return resvS.findByUserNum(user_num);
 	}
 	
@@ -105,101 +109,77 @@ public class PlanController {
 	public int getNextGroupNum() {
 		return planS.getNextGroupNum();
 	}
-	@GetMapping("/getNextFlowNum/{plan_group_num}/{plan_date}")
+	@GetMapping("/getNextFlowNum")
 	@ResponseBody
-	public int getNextFlowNum(@PathVariable int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") @PathVariable Date plan_date) {
+	public int getNextFlowNum(@RequestParam int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam Date plan_date) {
 		return planS.getNextFlowNum(plan_group_num, plan_date);
 	}//주소창 요청 방법 ex) => http://localhost:8080/getNextFlowNum/1/2022-07-23
 	
 	//------------------------- 입력 및 수정 --------------------------------
 	
-	@GetMapping("/insertPlan/{user_num}") //플랜 입력창으로 이동
+	@GetMapping("/plan/insertPlan/{user_num}") //플랜 입력창으로 이동
 	public String insert(Model model, @PathVariable int user_num) {
-		//유저 번호를 함께 입력 받아 해당 유저 정보 model에유지.
-		//로그인 구현 후 httpSession에 담긴 값을 활용할 예정. 
+		//유저번호로 유저 정보 상태유지, 로그인 구현후 session 저장값 사용예정 
 		model.addAttribute("user", userS.getUser(user_num)); 
-		
-		//플랜과 플레이스 전체값 model로 유지.
-		model.addAttribute("plan_list", planS.findByUserNum(user_num));  
-		
-		//distinct 먹인플랜그룹리스
-//		model.addAttribute("plan_group_list", planS.findPlanGroupNum(user_num));
-		
-		//플랜은 향후 해당 유저의 플랜만 입력 뷰페이지로 보내는 방식으로 수정 예정?
+		//DB내 모든 장소리스트 
 		model.addAttribute("place_list", placeS.findAll()); 
 		
-		 //pk값 갖고 감!
-		model.addAttribute("plannum", planS.getNextPlanNum());
-		//새로운 groupnum
-		model.addAttribute("groupnum", planS.getNextGroupNum());
-		
-		//찜, 예약리스트 실어주기
+		//사용자별 여행계획 리스트 
+		model.addAttribute("user_plan_list", planS.findDistinctByUserNum(user_num));
+
+		//사용자별 찜, 예약리스트
 		model.addAttribute("dibs", dibsS.findByUserNum(user_num));
-		
 		model.addAttribute("reservation", resvS.findByUserNum(user_num));
-		
 		
 		return "/insertPlan"; //model에값들 담고 insertPlan페이지로 입력 받으러 리디렉션!
 	}
 
 	
 	@PostMapping("/savePlan/{user_num}") //플랜 저장 
-	public ModelAndView save(PlanDTO pt, RouteDTO rt, @PathVariable int user_num) {
-		System.out.println(pt);
-		//System.out.println(rt);
+	public ModelAndView save(PlanDTO pDTO, RouteDTO rDTO, @PathVariable int user_num) {
+		//System.out.println(pDTO);
 		
-		Plan p= new Plan();
+		//날짜별동선을 입력받을 리스트 생성 
+		ArrayList<RouteDTO> route_list = pDTO.getList();
 		
-		System.out.println( "세팅 전: " + p+ "\n");
-		
-		//plan_group_num, plan_name, plan_date
-		p.setPlan_group_num(pt.getPlan_group_num());
-		p.setPlan_name(pt.getPlan_name());
-		p.setPlan_date(pt.getPlan_date());
-		
-		System.out.println( "세팅 중간, user_num 전: " + p+ "\n");
-		
-		//p.setUserinfo(user_num);
-		//pt.getList();
-		System.out.println( "for문 전 " + p+ "\n");
-		for (int i=0; i < pt.getList().size(); i++) {
-			System.out.println("List: "+ pt.getList()+"\n");
-			
-			//flow_num, flow_name, place
-			p.setPlace(placeS.getPlace(rt.getPlace_num()));
-			p.setPlan_flow_num(rt.getPlan_flow_num());
-			p.setPlan_flow_name(rt.getPlan_flow_name());
-			p.setPlan_num(planS.getNextPlanNum());
-			
-			System.out.println("Plan Entity : "+ p+"\n");
-			//planS.save(p); //insert & update
+		//새로운 pk 값을 리턴받아 저장하기 위해 getNextNum을 통해 값을 받아오
+		int nxtNum = planS.getNextPlanNum();
+		//입력 받은 날짜별 동선 DTO와, pk값을 갖고 Plan 엔티티에 매핑 시킨 후 리스트로 반환받아 저장.
+		ArrayList<Plan> plan_list = pDTO.toPlan(route_list);
+		for(Plan i : plan_list ) {
+			System.out.println("Save에서 받은 Plan객체 : "+i+"\n");
 		}
-		//System.out.println(p);
 		
-		ModelAndView mav = new ModelAndView(); //save 메소드 실행 후 listPlan으로 일단 리디렉션 설정.
-		mav.setView(new RedirectView("/listPlan")); //향후 해당 user_num에 따른 listPlan만 보여주게 설정할예정!
+		for (Plan p: plan_list) {//반환 받은 플랜 리스트만큼 save 돌기 
+			if( p.getPlan_num() != 0) {
+				planS.save(p);
+			}
+		}
+		
+		ModelAndView mav = new ModelAndView(); //save 후 다시 insertPlan페이지로 이동!
+		mav.setView(new RedirectView("/plan/insertPlan/"+user_num)); 
 		return mav;
 	}
 	
 	
 	//---------------------------- 삭제 --------------------------------
-	@GetMapping("/deleteByPlanNum/{plan_num}")
+	@RequestMapping("/deleteByPlanNum")
 	@ResponseBody
-	public void deleteById(@PathVariable int plan_num) {
+	public void deleteById(@RequestParam int plan_num) {
 		planS.deleteById(plan_num);
 		//return "deleteByPlanNum_OK";
 	}
 	
-	@GetMapping("/deleteByGroupNum/{plan_group_num}")
+	@GetMapping("/deleteByGroupNum")
 	@ResponseBody
-	public void deleteByGroupNum(@PathVariable int plan_group_num) {
+	public void deleteByGroupNum(@RequestParam int plan_group_num) {
 		planS.deleteByGroupNum(plan_group_num);
 		//return "deleteByPlanNum_OK";
 	}
 	
-	@GetMapping("/deleteByPlanDate/{plan_group_num}/{plan_date}")
+	@GetMapping("/deleteByPlanDate")
 	@ResponseBody
-	public void deleteByPlanDate(@PathVariable int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") @PathVariable Date plan_date) {
+	public void deleteByPlanDate(@RequestParam int plan_group_num, @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam Date plan_date) {
 		planS.deleteByPlanDate(plan_group_num, plan_date);
 	}
 }

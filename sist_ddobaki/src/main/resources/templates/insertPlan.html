@@ -28,10 +28,10 @@
 		<!-- 여행 타이틀 (plan_group_num) -->
 		<div class="input-group grpNum">
 			<input style="display: none" id="planText" type="text" class="form-control planGroupTxt" name="plan_name">
-			<input style="display: none" id="planGrpNum"> <!--name="plan_group_num"-->
-			<select id="planList" name="plan_group_num" class="form-select planGroupOpGrp" aria-label="select-plan-group">
+			<input style="display: none" name="plan_group_num" id="planGrpNum"> <!--name="plan_group_num"-->
+			<select id="planList" class="form-select planGroupOpGrp" aria-label="select-plan-group">
 				<option selected disabled>여행 계획 선택</option>
-				<option th:each="p:${plan_list}" th:value="${p.plan_group_num}" th:text="${p.plan_name}" class="planGroupOp"></option>
+				<option th:each="p:${user_plan_list}" th:value="${p.plan_group_num}" th:text="${p.plan_name}" class="planGroupOp"></option>
 			</select>
 			
 		<!-- 플랜 그룹 넘버(plan_group_num) : <input type="number" name="plan_group_num" th:value="${groupnum}"><br>
@@ -52,7 +52,7 @@
 	   	
 	     	<!-- 여행 날짜(plan_date) -->
    			<div class="row justify-content-center date input-group-addon input-group-button">
-	     		<input type="date" name="plan_date" th:value="${plan_date}" class="col-5">
+	     		<input type="date" id="planDate" name="plan_date" th:value="${plan_date}" class="col-5">
 	     		<button type="button" id="AddPlan" class="btn btn-dark col-2">동선추가</button>
    				<div class="btnPlaceListAll btn-group">
 	     			<div class="btn_place_list">
@@ -81,7 +81,7 @@
 			<!-- 유저 번호(user_num) -->
 			<input type="hidden" id="userNum" name="userinfo.user_num" th:value="${user.user_num}">
 			<!-- 여행 세부 내용 -->
-			<input id="plannum" type="hidden" name="plan_num" th:value="${plannum}">			
+			<!--<input id="plannum" type="hidden" name="plan_num" th:value="${plannum}">	-->		
 
 			<div class="input-group" >
 				<div id="inputAppend"></div>
