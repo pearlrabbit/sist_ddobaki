@@ -114,7 +114,7 @@ public class PlaceController {
         int user_num=us.findByUser_id(user_id).getUser_num();
 		
 //        세션 값 설정
-//        session.setAttribute("user_num", user_num);
+		session.setAttribute("user_num", user_num);
 		
 //		session.getAttribute("user_num");
 		
